@@ -31,7 +31,6 @@
 * LifeCycle은 Build Phase로 구성되며 일련의 순서를 가진다.
 * phase는 실행단위로서 goal과 바인딩된다.
 * 빌드를 담당하는 Default, 제거를 담당하는 Clean, 배포를 담당하는 Site 라이프사이클이 존재
-p
 
 #### Build default 라이프사이클의 주요 phase
 ![Phase](img/Phase.png)
