@@ -159,4 +159,11 @@
 ### DNS
 
 * 사용자는 아마도 거의 항상 add-on을 이용하여 Kubernetes cluster에 DNS service를 set up할 것이다.
-* CoreDNS같은 cluster-aware DNS server는 new Services와 각 DNS records의 생성을 Kubernetes API를 관찰하여
+* CoreDNS같은 cluster-aware DNS server는 new Services와 각 DNS records의 생성을 Kubernetes API를 관찰한다.
+  * DNS가 cluster 전체에 enable 되어있다면 파드는 자동으로 DNS name을 통해 Service를 해석한다.
+* 예를 들어 `"my-service"`라고 하는 Service가 Kubernetes Namespace `"ms-ns"`에 있다면, control plane과 DNS Service는 함께 `"my-service.my-ns"`에 대한 DNS record를 생성한다.
+  * `"my-ns"` namespace에 있는 파드는 `my-service`(`"my-service.my-ns"`도 가능)에 대한 이름 검색을 통해서 쉽게 찾을 수 있어야 한다.
+* 다른 namespace에 있는 파드는 반드시 `my-service.my-ns`로 사용해야 한다.
+  * 이 이름은 Service에 할당된 cluster IP로 해석될 것이다.
+* Kubernetes는 또한 named ports를 위한 DNS SRV (Service) records를 지원한다.
+  * `"my-service.my-ns"` Service가 `"http"` 이름을 가지고 있고, protocol `TCP`, `_http._tcp.my-service.my-ns` DNS SRV query  
