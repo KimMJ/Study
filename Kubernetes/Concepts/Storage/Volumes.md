@@ -196,6 +196,8 @@ spec:
 * awsElasticBlockStore의 CSI Migration feature가 활성화되면 존재하고 있는 in-tree plugin에서 `ebs.csi.aws.com` Container Storage Interface(CSI) Driver로 모든 plugin operations로 shim(redirect)한다.
   * 이 기능을 사용하기 위해선 AWS EBS CSI Driver가 cluster에서 반드시 설치되어 있어야하고 `CSIMigration`과 `CSIMigrationAWS` Alpha features가 반드시 활성화되어야 한다.
 
+
+
 ## Using subPath
 
 * 가끔 
