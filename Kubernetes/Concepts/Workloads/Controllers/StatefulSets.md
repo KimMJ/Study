@@ -1,10 +1,10 @@
 # StatefulSets
 
-* StatefulSet은 stateful application을 고나리하기 위한 workload API object이다.
+* StatefulSet은 stateful application을 관리하기 위한 workload API object이다.
 * deployment와 pod의 scaling을 관리하고 이런 pod에 대해서 ordering과 uniqueness를 보장한다.
 * Deployment처럼 StatefulSet은 container spec과 일치하는 파드를 관리한다.
 * Deployment와는 다르게 StatefulSet은 각각의 파드에 sticky identity를 유지한다.
-* 이런 파드들은 같은 스펙으로 생성이 되지만 교환돌 수 없다.
+* 이런 파드들은 같은 스펙으로 생성이 되지만 교환될 수 없다.
   * 각각은 rescheduling이 되는 동안에도 영구적인 ID를 가지고 있는다.
 * StatefulSet은 다른 Controller와 같은 패턴으로 동작한다.
   * StatefulSet object에 원하는 상태를 기술하고, StatefulSet controller가 현재 상태에서 그 상태로 필요시 업데이트 해준다.
@@ -26,7 +26,7 @@
 * 파드의 storage는 필요한 `storage class` PersistentVolume Provisioner에 의해서 준비되거나 관리자에 의해서 준비되어야 한다.
 * StatefulSet을 삭제하거나 scaling down하는 것은 StatefulSet과 관련된 volume을 삭제하지 않는다.
 * StatefulSet은 파드의 network identity를 위한 Headless Service가 필요하다. 이 Service를 생성해 주어야 한다.
-* StatefulSEt은 StatefulSet이 삭제될 때 파드의 종료를 제공하지 않는다. 파드의 ordered, graceful termination을 원하면 StatefulSet을 0으로 scale down하고 제거하라.
+* StatefulSet은 StatefulSet이 삭제될 때 파드의 종료를 제공하지 않는다. 파드의 ordered, graceful termination을 원하면 StatefulSet을 0으로 scale down하고 제거하라.
 * default Pod Management Policy(`OrderedReady`)로 Rolling Update를 할 때 수리를 위해 manual intervention으로 broken state에 진입이 가능하다.
 
 ## Components
