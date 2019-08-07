@@ -80,115 +80,6 @@
 
 * zone이 cluster가 들어있는 zone과 일치함을 확실히 해라. (그리고 크기와 EBS volume type이 사용하기에 적합한지도 확인해라.)
 
-#### AWS EBS Example configuration
-
-[Edit This Page](https://github.com/kubernetes/website/edit/master/content/en/docs/concepts/storage/volumes.md)
-
-# Volumes
-
-On-disk files in a Container are ephemeral, which presents some problems for non-trivial applications when running in Containers. First, when a Container crashes, kubelet will restart it, but the files will be lost - the Container starts with a clean state. Second, when running Containers together in a `Pod` it is often necessary to share files between those Containers. The Kubernetes `Volume` abstraction solves both of these problems.
-
-Familiarity with [Pods](https://kubernetes.io/docs/user-guide/pods) is suggested.
-
-- [Background](https://kubernetes.io/docs/concepts/storage/volumes/#background)
-- [Types of Volumes](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes)
-- [Using subPath](https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath)
-- [Resources](https://kubernetes.io/docs/concepts/storage/volumes/#resources)
-- [Out-of-Tree Volume Plugins](https://kubernetes.io/docs/concepts/storage/volumes/#out-of-tree-volume-plugins)
-- [Mount propagation](https://kubernetes.io/docs/concepts/storage/volumes/#mount-propagation)
-- [What's next](https://kubernetes.io/docs/concepts/storage/volumes/#what-s-next)
-
-## Background
-
-Docker also has a concept of [volumes](https://docs.docker.com/engine/admin/volumes/), though it is somewhat looser and less managed. In Docker, a volume is simply a directory on disk or in another Container. Lifetimes are not managed and until very recently there were only local-disk-backed volumes. Docker now provides volume drivers, but the functionality is very limited for now (e.g. as of Docker 1.7 only one volume driver is allowed per Container and there is no way to pass parameters to volumes).
-
-A Kubernetes volume, on the other hand, has an explicit lifetime - the same as the Pod that encloses it. Consequently, a volume outlives any Containers that run within the Pod, and data is preserved across Container restarts. Of course, when a Pod ceases to exist, the volume will cease to exist, too. Perhaps more importantly than this, Kubernetes supports many types of volumes, and a Pod can use any number of them simultaneously.
-
-At its core, a volume is just a directory, possibly with some data in it, which is accessible to the Containers in a Pod. How that directory comes to be, the medium that backs it, and the contents of it are determined by the particular volume type used.
-
-To use a volume, a Pod specifies what volumes to provide for the Pod (the `.spec.volumes` field) and where to mount those into Containers (the `.spec.containers.volumeMounts` field).
-
-A process in a container sees a filesystem view composed from their Docker image and volumes. The [Docker image](https://docs.docker.com/userguide/dockerimages/) is at the root of the filesystem hierarchy, and any volumes are mounted at the specified paths within the image. Volumes can not mount onto other volumes or have hard links to other volumes. Each Container in the Pod must independently specify where to mount each volume.
-
-## Types of Volumes
-
-Kubernetes supports several types of Volumes:
-
-- [awsElasticBlockStore](https://kubernetes.io/docs/concepts/storage/volumes/#awselasticblockstore)
-- [azureDisk](https://kubernetes.io/docs/concepts/storage/volumes/#azuredisk)
-- [azureFile](https://kubernetes.io/docs/concepts/storage/volumes/#azurefile)
-- [cephfs](https://kubernetes.io/docs/concepts/storage/volumes/#cephfs)
-- [cinder](https://kubernetes.io/docs/concepts/storage/volumes/#cinder)
-- [configMap](https://kubernetes.io/docs/concepts/storage/volumes/#configmap)
-- [csi](https://kubernetes.io/docs/concepts/storage/volumes/#csi)
-- [downwardAPI](https://kubernetes.io/docs/concepts/storage/volumes/#downwardapi)
-- [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir)
-- [fc (fibre channel)](https://kubernetes.io/docs/concepts/storage/volumes/#fc)
-- [flexVolume](https://kubernetes.io/docs/concepts/storage/volumes/#flexVolume)
-- [flocker](https://kubernetes.io/docs/concepts/storage/volumes/#flocker)
-- [gcePersistentDisk](https://kubernetes.io/docs/concepts/storage/volumes/#gcepersistentdisk)
-- [gitRepo (deprecated)](https://kubernetes.io/docs/concepts/storage/volumes/#gitrepo)
-- [glusterfs](https://kubernetes.io/docs/concepts/storage/volumes/#glusterfs)
-- [hostPath](https://kubernetes.io/docs/concepts/storage/volumes/#hostpath)
-- [iscsi](https://kubernetes.io/docs/concepts/storage/volumes/#iscsi)
-- [local](https://kubernetes.io/docs/concepts/storage/volumes/#local)
-- [nfs](https://kubernetes.io/docs/concepts/storage/volumes/#nfs)
-- [persistentVolumeClaim](https://kubernetes.io/docs/concepts/storage/volumes/#persistentvolumeclaim)
-- [projected](https://kubernetes.io/docs/concepts/storage/volumes/#projected)
-- [portworxVolume](https://kubernetes.io/docs/concepts/storage/volumes/#portworxvolume)
-- [quobyte](https://kubernetes.io/docs/concepts/storage/volumes/#quobyte)
-- [rbd](https://kubernetes.io/docs/concepts/storage/volumes/#rbd)
-- [scaleIO](https://kubernetes.io/docs/concepts/storage/volumes/#scaleio)
-- [secret](https://kubernetes.io/docs/concepts/storage/volumes/#secret)
-- [storageos](https://kubernetes.io/docs/concepts/storage/volumes/#storageos)
-- [vsphereVolume](https://kubernetes.io/docs/concepts/storage/volumes/#vspherevolume)
-
-We welcome additional contributions.
-
-### awsElasticBlockStore
-
-An `awsElasticBlockStore` volume mounts an Amazon Web Services (AWS) [EBS Volume](http://aws.amazon.com/ebs/) into your Pod. Unlike `emptyDir`, which is erased when a Pod is removed, the contents of an EBS volume are preserved and the volume is merely unmounted. This means that an EBS volume can be pre-populated with data, and that data can be “handed off” between Pods.
-
-> **Caution:** You must create an EBS volume using `aws ec2 create-volume` or the AWS API before you can use it.
-
-There are some restrictions when using an `awsElasticBlockStore` volume:
-
-- the nodes on which Pods are running must be AWS EC2 instances
-- those instances need to be in the same region and availability-zone as the EBS volume
-- EBS only supports a single EC2 instance mounting a volume
-
-#### Creating an EBS volume
-
-Before you can use an EBS volume with a Pod, you need to create it.
-
-```shell
-aws ec2 create-volume --availability-zone=eu-west-1a --size=10 --volume-type=gp2
-```
-
-Make sure the zone matches the zone you brought up your cluster in. (And also check that the size and EBS volume type are suitable for your use!)
-
-#### AWS EBS Example configuration
-
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: test-ebs
-spec:
-  containers:
-  - image: k8s.gcr.io/test-webserver
-    name: test-container
-    volumeMounts:
-    - mountPath: /test-ebs
-      name: test-volume
-  volumes:
-  - name: test-volume
-    # This AWS EBS volume must already exist.
-    awsElasticBlockStore:
-      volumeID: <volume-id>
-      fsType: ext4
-```
-
 #### CSI Migration
 
 **FEATURE STATE : ** `Kubernetes v1.14` - alpha
@@ -196,8 +87,165 @@ spec:
 * awsElasticBlockStore의 CSI Migration feature가 활성화되면 존재하고 있는 in-tree plugin에서 `ebs.csi.aws.com` Container Storage Interface(CSI) Driver로 모든 plugin operations로 shim(redirect)한다.
   * 이 기능을 사용하기 위해선 AWS EBS CSI Driver가 cluster에서 반드시 설치되어 있어야하고 `CSIMigration`과 `CSIMigrationAWS` Alpha features가 반드시 활성화되어야 한다.
 
+### azureDisk
 
+### cephfs
+
+* `cephfs` volume은 존재하는 CephFS volume을 파드에 mount되도록 한다.
+  * 파드가 삭제되면 지우는 `emptyDir`과는 다르게 `cephfs` volume은 보존되고 드물게 unmounted된다.
+  * 이는 CephFS volume이 데이터를 가지고 pre-populated될 수 있고 그 데이터는 파드간에 "handed off"될 수 있음을 의미한다.
+  * CephFS는 동시에 여러 writer에 의해 mount될 수 있다.
+
+> Caution : 사용하기 전에 share exported이고 작동중인 Ceph server를 가지고 있어야 한다.
+
+* 자세한 사항은 [CephFS example](https://github.com/kubernetes/examples/tree/master/volumes/cephfs/) 참고
+
+### configMap
+
+* `configMap` resource는 configuration data를 파드에 주입시키는 방법을 제공한다.
+
+  * `ConfigMap` object에 저장된 데이터는 `configMap` 타입의 volume에서 참조될 수 있고 그러면 파드에서 동작중인 containerized applications에 의해 소비될 수 있다.
+
+* `configMap` object를 참조할 때 이를 참조하기 위해 volume에서 이름을 제공해주어야 한다.
+
+  * 또한 ConfigMap에서 지정된 entry를 사용하기 위해 path를 customize할 수 있다.
+
+  * 예를 들어 `configmap-pod`라고 불리는 파드 위에 `log-config` ConfigMap을 mount하기 위해 다음과 같이 YAML을 작성해야 한다.
+
+    ```yaml
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: configmap-pod
+    spec:
+      containers:
+        - name: test
+          image: busybox
+          volumeMounts:
+            - name: config-vol
+              mountPath: /etc/config
+      volumes:
+        - name: config-vol
+          configMap:
+            name: log-config
+            items:
+              - key: log_level
+                path: log_level
+    ```
+
+* `log-config` ConfigMap은 volume으로써 mount되었고 모든 `log_level` entry 안의 내용들은 파드의 "`/etc/config/log_level`" path에 mount 되었다.
+  * 이 path가 volume의 `mountPath`와 key가 `log_level`인 `path`로부터 왔음을 주목하라.
+
+> Caution : 반드시 사용전에 ConfigMap을 생성해야 한다.
+
+> Note : subPath volume mount로써 ConfigMap을 사용하는 container는 ConfigMap 업데이트를 받지 못할 것이다.
+
+### rbd
+
+* `rbd` volume은 [Rados Block Device](http://ceph.com/docs/master/rbd/rbd/) volume을 파드에 mount되게 해준다.
+  * 파드가 삭제되면 지워지는 `emtpyDir`과는 다르게 `rbd` volume의 내용들은 보존되고 volume은 드물게 unmount된다.
+  * 이는 RBD volume이 데이터로 pre-populated될 수 있고 그 데이터는 파드간에 "handed off"될 수 있음을 의미한다.
+
+> Caution : RBD를 사용하기 전에 반드시 Ceph installation이 동작하도록 하 해야한다.
+
+* RBD의 feautre는 동시에 여러 consumer에 의해서 read-only로 mount될 수 있다는 것이다.
+  * 이는 volume을 dataset으로 pre-populate할 수 있고 이를 원하는 만큼 많은 파드에서 병렬적으로 서비스할 수 있음을 의미한다.
+  * 불행히도 RBD volume은 오직 하나의 consumer에서만 read-write mode로 mount될 수 있다. - 동시에 여러 writer가 있는것은 허용되지 않는다.
+* 자세한 사항은 [RBD example](https://github.com/kubernetes/examples/tree/master/volumes/rbd) 참고
+
+### secret
+
+* `secret` volume은 password같은 민감한 정보를 파드에 보내기 위해 사용된다.
+  * Kubernetes API에 secrets를 저장할 수 있고 이를 Kubernetes에 직접 연관되지 않고 파드가 사용하도록 하기 위해 file로 mount할 수 있다.
+  * `secret` volume은 tmpfs(RAM기반 filesystem)기반으로 구성되어있어 non-volatile storage에 절대 적히지 않는다.
+
+> Caution : 사용 전에 반드시 Kubernetes API에 secret을 생성해야 한다.
+
+> Note : subPath volume mount로써 Secret을 사용하는 container는 Secret 업데이트를 받지 못할 것이다.
+
+* 자세한 사항은 [여기](https://kubernetes.io/docs/user-guide/secrets)에 설명되어있다.
 
 ## Using subPath
 
-* 가끔 
+* 가끔 하나의 파드 안에서 하나의 volume을 다수의 사용자에 대해서 공유하는 것이 유용할 수 있다.
+
+  * `volumeMounts.subPath` 속성이 root 대신에 참조된 volume안에서 sub-path를 지정하는데 사용된다.
+
+* 하나의 공유된 volume을 사용하는 LAMP stack (Linux Apache Mysql PHP)인 파드에서의 예시이다.
+
+  * HTML contents는 `html` 폴더로 매핑이 되고 database는 `mysql` 폴더에 저장이 된다.
+
+  ```yaml
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: my-lamp-site
+  spec:
+      containers:
+      - name: mysql
+        image: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: &quot;rootpasswd&quot;
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: site-data
+          subPath: mysql
+      - name: php
+        image: php:7.0-apache
+        volumeMounts:
+        - mountPath: /var/www/html
+          name: site-data
+          subPath: html
+      volumes:
+      - name: site-data
+        persistentVolumeClaim:
+          claimName: my-lamp-site-data
+  ```
+
+### Using subPath with expanded environment variables
+
+**FEATURE STATE : ** `Kubernetes v1.15` - beta
+
+* `subPathExpr` 필드를 사용하여 `subPath` directory names를 Downward API environment variables로부터 구성할 수 있다.
+
+  * 이 feature를 사용하기 전에 반드시 `VolumeSubpathEnvExpansion` feature gate를 활성화 해야한다.
+  * `subPath`와 `subPathExpr` 속성은 상호 배타적이다.
+
+* 이 예시에서 파드는 `subPathExpr`를 사용하여 directory `pod1`을 hostPath volume `/var/log/pods`에 생성하고 Downward API로부터 파드 이름을 사용한다.
+
+* host directory `/var/log/pods/pod1`는 container에서 `/logs`에 mount된다.
+
+  ```yaml
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: pod1
+  spec:
+    containers:
+    - name: container1
+      env:
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      image: busybox
+      command: [ "sh", "-c", "while [ true ]; do echo 'Hello'; sleep 10; done | tee -a /logs/hello.txt" ]
+      volumeMounts:
+      - name: workdir1
+        mountPath: /logs
+        subPathExpr: $(POD_NAME)
+    restartPolicy: Never
+    volumes:
+    - name: workdir1
+      hostPath:
+        path: /var/log/pods
+  ```
+
+## Resources
+
+* `emptyDir` volume의 storage media(Disk, SSD 등)는 kubelet root dir(보통 `/var/lib/kubelet`)를 가지고있는 filesystem의 medium에 의해 결정된다.
+  * 얼마나 많은 `emptyDir`이나 `hostPath` volume 공간을 소비할지는 제한이 없으며 container나 파드들 같의 isolation이 없다.
+* 나중에는 `emptyDir`과 `hostPath` volume이 resource specification을 사용하여 특정한 양만큼의 공간을 요청하도록 할 수 있을 것이며 사용할 몇몇 media 타입을 가지는 cluster에 대해 media 종류를 선택할 수 있을 것이다.
+
