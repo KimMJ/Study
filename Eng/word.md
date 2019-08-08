@@ -33,7 +33,7 @@
 | demonstrate       | 증거를 들어가며 보여주다.         |
 | embody            | 포함하다.                         |
 | ephemeral         | 수명이 짧은                       |
-|                   |                                   |
+| supersedes        | 대체하다                          |
 |                   |                                   |
 |                   |                                   |
 |                   |                                   |
