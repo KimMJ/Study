@@ -56,7 +56,7 @@ Helm Classic에 대한 `Chart.yaml` 파일 포멧과 친숙하다면 의존성�
 
 다른 필드는 그냥 무시된다.
 
-### Chart and Versioning
+### Charts and Versioning
 
 모든 차트는 버전 번호가 반드시 있다. 버전은 반드시 SemVer2 표준을 따라야 한다. Helm Classic과는 다르게 쿠버네티스 Helm은 버전 번호를 릴리즈 마커(release marker)로 사용한다. 레파지토리의 패키지들은 이름과 버전으로 구분된다.
 
@@ -356,7 +356,7 @@ wordpress:
       # ...
 ```
 
-위의 예시는 WordPress 차트가 이 Apache와 MySQL에 대한 의존성을  `charts/` 디렉토리안에 포함시킴으로써 의존성이 있음을 보여준다.
+위의 예시는 WordPress 차트가 이 Apache와 MySQL에 대한 의존성을 `charts/` 디렉토리안에 포함시킴으로써 의존성이 있음을 보여준다.
 
 > Tip : `charts/` 디렉토리 안에서 의존성을 없애고 싶으면 `helm fetch` 명령어를 사용하라.
 

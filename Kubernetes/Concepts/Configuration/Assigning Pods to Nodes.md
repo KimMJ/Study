@@ -227,7 +227,7 @@ spec:
 * 이 파드의 affinity는 하나의 pod affinity rule과 pod anti-affinity rule을 가지고 있다.
   * 이 예시에서 `podAffinity`는 `requiredDuringSchedulingIgnoredDuringExecution`인 반면 `podAntiAffinity`는 `preferredDuringSchedulingIgnoredDuringExecution`이다.
   * pod affinity rule은 최소 하나의 파드가 key가 "security"이고 value가 "S1"인 라벨을 가지고 있는 존과 같은 곳에 위치한 노드에만 스케쥴링 될 수 있다는 것을 의미한다.
-    * 더 정확하게는 노드 N이 key가 `failure-domain.beta.kubernetes.io/zone`이고 클러스터 내에 key가 `failure-domain.beta.kubernetes.io/zone`인 노드가 최소 하나 있으면서 값이 V인 것이 key가 "security"이고 value가 "S1"인 라벨을 가진 파드를 동작시키면 파드는 노드 N에서 동작하기에 적합하다는 의미이다.
+    * 더 정확하게는 노드 N의 라벨 중 key가 `failure-domain.beta.kubernetes.io/zone`인 것이 있고 클러스터 내에 key가 `failure-domain.beta.kubernetes.io/zone`인 노드가 최소 하나 있으면서 값이 V인 것이 key가 "security"이고 value가 "S1"인 라벨을 가진 파드를 동작시키면 파드는 노드 N에서 동작하기에 적합하다는 의미이다.
   * pod anti-affinity 룰은 key가 "security"이고 value가 "S2"인 라벨을 가진 파드가 동작하고 있는 노드에는 스케쥴되지 않기를 선호한다는 것을 의미한다.
     * 만약 `topologyKey`가 `failure-domain.beta.kubernetes.io/zone`이면 key가 "security"이고 value가 "S2"인 라벨을 가진 파드와 같은 존에 있는 노드에 스케쥴 되지 않는다는 것을 의미한다.
   * pod affinity와 pod anti-affinity에 대한 다양한 예시는 [design doc](https://git.k8s.io/community/contributors/design-proposals/scheduling/podaffinity.md)에서 볼수 있다.
@@ -329,10 +329,10 @@ spec:
 * 위의 두 deployments로 생성을 했다면 세개의 노드를 가진 클러스터는 다음과 같이 보일 것이다.
 
 
-  | node-1      | node-2      | node-3      |
-  | ----------- | ----------- | ----------- |
-  | webserver-1 | webserver-2 | webserver-3 |
-  | cache-1     | cache-2     | cache-3     |
+| node-1      | node-2      | node-3      |
+| ----------- | ----------- | ----------- |
+| webserver-1 | webserver-2 | webserver-3 |
+| cache-1     | cache-2     | cache-3     |
 
 * 위에서 볼 수 있듯이 `web-server`의 3 replicas는 예상했던 대로 자동으로 캐쉬와 같이 위치한다.
 
