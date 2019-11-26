@@ -272,7 +272,7 @@
 
 * 1.12버전에서 `TaintNodesByCondition` 기능이 베타버전으로 승격되어 node lifecycle controller가 자동적으로 노드의 상태에 상응하는 taints를 생성한다.
   * 이와 비슷하게 스케쥴러는 노드의 상태를 체크하지 않는 대신 taints를 체크한다.
-  * 이는 노드의 상태가 노드에 어떤것이 뜰지에 대해 영향을 주지 않는다는 것을 보장한다.
+  * 이는 노드의 상태가 노드에 떠있는 것들에 대해 영향을 주지 않음을 의미한다.
   * 유저는 적절한 파드 toleration을 추가함으로써 몇몇 노드 문제들(노드의 상태로 표현이 된)에 대해서 무시하도록 선택할 수 있다.
   * `TaintNodesByCondition`은 `NoSchedule` effect로만 노드를 taint 처리함을 참고하라.
   * `NoExecute` effect는 1.13버전부터 기본적으로 활성화되었고, 베타버전인 `TaintBasedEviction`에 의해서 처리된다.
